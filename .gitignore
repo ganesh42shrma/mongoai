@@ -1,0 +1,45 @@
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+dist/
+build/
+.env
+.env.*.local
+
+# Logs
+logs/
+*.log
+*.log.*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# Coverage
+coverage/
+.nyc_output/
+
+# Misc
+*.local
+*.cache
+*.bak
+*.swp
+*.tmp
+
+# Optional: TypeScript
+*.tsbuildinfo
+
+# Optional: Next.js
+.next/
+out/
