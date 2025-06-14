@@ -75,7 +75,7 @@ async function main() {
     const selectedCollection = collections[selectedIndex];
     logger.info(`Using collection: ${selectedCollection}`);
 
-    const rawQuery = await askMongoQuery(question, selectedCollection);
+    const rawQuery = await askMongoQuery(question, selectedCollection, dbUri, dbName);
     const { reasoning, query } = extractReasoningAndQuery(rawQuery);
     if (reasoning) {
       logger.info(`LLM Thinking: ${reasoning}`);
