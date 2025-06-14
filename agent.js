@@ -2,6 +2,7 @@ const readline = require("readline-sync");
 const { listCollections, runMongoQuery } = require("./lib/db");
 const { askLLM, getModelInfo } = require("./lib/llm");
 const { extractReasoningAndQuery } = require("./lib/utils");
+const logger = require("./lib/logger");
 
 async function askMongoQuery(question, collectionName) {
   const messages = [
@@ -50,51 +51,48 @@ async function askAnswerSummary(question, data) {
 async function main() {
   const [question, dbUri, dbName] = process.argv.slice(2);
   if (!question || !dbUri || !dbName) {
-    return console.error(
-      'Usage: node agent.js "<question>" "<mongoUri>" "<dbName>"'
-    );
+    return logger.error('Usage: node agent.js "<question>" "<mongoUri>" "<dbName>"');
   }
 
   const { model, useGroq } = getModelInfo();
-  console.log(`🤖 Using model: ${model} (${useGroq ? "Groq" : "Ollama"})`);
-  console.log("🧠 Question:", question);
+  logger.info(`Using model: ${model} (${useGroq ? "Groq" : "Ollama"})`);
+  logger.info(`Question: ${question}`);
 
   try {
     const collections = await listCollections(dbUri, dbName);
     if (!collections.length) {
-      return console.error("❌ No collections found in the database.");
+      return logger.error("No collections found in the database.");
     }
 
-    console.log("\n📁 Available Collections:");
-    collections.forEach((name, i) => console.log(`${i + 1}. ${name}`));
-    const selectedIndex =
-      readline.questionInt("\n👉 Choose a collection by number: ") - 1;
+    logger.info("Available Collections:");
+    collections.forEach((name, i) => logger.info(`${i + 1}. ${name}`));
+    const selectedIndex = readline.questionInt("Choose a collection by number: ") - 1;
 
     if (selectedIndex < 0 || selectedIndex >= collections.length) {
-      return console.error("❌ Invalid collection selected.");
+      return logger.error("Invalid collection selected.");
     }
 
     const selectedCollection = collections[selectedIndex];
-    console.log(`✅ Using collection: ${selectedCollection}`);
+    logger.info(`Using collection: ${selectedCollection}`);
 
     const rawQuery = await askMongoQuery(question, selectedCollection);
     const { reasoning, query } = extractReasoningAndQuery(rawQuery);
     if (reasoning) {
-      console.log("🧠 LLM Thinking:\n<think>\n" + reasoning + "\n</think>\n");
+      logger.info(`LLM Thinking: ${reasoning}`);
     }
 
     if (!query)
       throw new Error("Failed to extract valid JSON from LLM response.");
 
-    console.log("⚙️ Cleaned Query:", query);
+    logger.info(`Cleaned Query: ${query}`);
 
     const result = await runMongoQuery(query, dbUri, dbName);
-    console.log("📊 Result:", result);
+    logger.info(`Result: ${result}`);
 
     const naturalAnswer = await askAnswerSummary(question, result);
-    console.log("🗣️ [MONGOMAN]", naturalAnswer);
+    logger.info(`[MONGOMAN] ${naturalAnswer}`);
   } catch (err) {
-    console.error("❌ Error:", err.message);
+    logger.error(`Error: ${err.message}`);
   }
 }
 
