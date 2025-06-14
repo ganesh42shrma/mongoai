@@ -88,7 +88,7 @@ async function main() {
 
     console.log("⚙️ Cleaned Query:", query);
 
-    const result = await runMongoQuery(cleanedQuery, dbUri, dbName);
+    const result = await runMongoQuery(query, dbUri, dbName);
     console.log("📊 Result:", result);
 
     const naturalAnswer = await askAnswerSummary(question, result);
