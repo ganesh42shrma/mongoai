@@ -1,3 +1,11 @@
+const { createClient } = require('@supabase/supabase-js');
+
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_ANON_KEY
+)
+
+
 function extractReasoningAndQuery(raw) {
   const reasoningMatch = raw.match(/<think>([\s\S]*?)<\/think>/i);
   let candidate = null;
@@ -50,4 +58,4 @@ function safeJsonParseFromLLM(raw) {
   return JSON.parse(jsonStr);
 }
 
-module.exports = { extractReasoningAndQuery, safeJsonParseFromLLM };
+module.exports = { extractReasoningAndQuery, safeJsonParseFromLLM, supabase};
