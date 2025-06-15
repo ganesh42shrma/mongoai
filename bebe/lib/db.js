@@ -6,7 +6,7 @@ async function listCollections(dbUri, dbName) {
   const db = client.db(dbName);
   const collections = await db.listCollections().toArray();
   await client.close();
-  return collections.map(col => col.name);
+  return collections.map((col) => col.name);
 }
 
 async function runMongoQuery(jsonString, dbUri, dbName) {
@@ -44,6 +44,8 @@ async function runMongoQuery(jsonString, dbUri, dbName) {
       break;
     case "updateOne":
       result = await collection.updateOne(filter, { $set: document });
+    case "aggregate":
+      result = await collection.aggregate(query.pipeline || []).toArray();
       break;
     default:
       throw new Error(`Unsupported method: ${method}`);
