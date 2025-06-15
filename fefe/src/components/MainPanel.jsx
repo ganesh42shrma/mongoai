@@ -12,10 +12,11 @@ export default function MainPanel({
   loading,
   selectedCollection,
   dbConfig,
+  user,
+  handleLogout,
 }) {
   const hasResults = result || summary || cleanedQuery;
   const isConnected = dbConfig.dbUri && dbConfig.dbName;
-
   return (
     <main className="flex-1 flex flex-col relative bg-[#0a0a0a]">
       {/* Header */}
@@ -39,15 +40,8 @@ export default function MainPanel({
             <div>
               {/* Profile Section */}
               <ProfileMenu
-                user={{
-                  name: "Ganesh Sharma",
-                  email: "ganesh@example.com",
-                  avatar: "https://your-avatar-url.com", // or use `null` for initials
-                }}
-                onLogout={() => {
-                  // Clear localStorage/session and redirect or update app state
-                  console.log("Logged out!");
-                }}
+                userData={user}
+                onLogout={handleLogout}
               />
             </div>
           </div>
