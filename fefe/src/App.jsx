@@ -21,6 +21,7 @@ function App() {
     dbName: "",
     shouldConnect: false,
   });
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   // Handle authentication
   useEffect(() => {
@@ -248,7 +249,9 @@ function App() {
         dbConfig={dbConfig}
         onDbConfigChange={handleDbConfigChange}
         user={user}
+        isOpen={sidebarOpen}
         onLogout={handleLogout}
+        toggleSidebar={()=> setSidebarOpen(!sidebarOpen)}
       />
       <MainPanel
         query={query}
@@ -262,6 +265,8 @@ function App() {
         dbConfig={dbConfig}
         user={user}
         onLogout={handleLogout}
+        isOpen={sidebarOpen}
+        toggleSidebar={()=> setSidebarOpen(!sidebarOpen)}
       />
     </div>
   );
