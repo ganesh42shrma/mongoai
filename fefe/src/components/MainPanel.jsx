@@ -13,7 +13,7 @@ export default function MainPanel({
   selectedCollection,
   dbConfig,
   user,
-  handleLogout,
+  onLogout,
 }) {
   const hasResults = result || summary || cleanedQuery;
   const isConnected = dbConfig.dbUri && dbConfig.dbName;
@@ -41,7 +41,7 @@ export default function MainPanel({
               {/* Profile Section */}
               <ProfileMenu
                 userData={user}
-                onLogout={handleLogout}
+                onLogout={onLogout}
               />
             </div>
           </div>
