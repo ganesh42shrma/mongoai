@@ -24,9 +24,9 @@ app.use((req, res, next) => {
 app.use(express.json());
 
 // Use handlers
-app.get('/health', authenticateToken, healthHandler);
-app.post('/collections', authenticateToken, collectionsHandler);
-app.post('/ask', authenticateToken, askHandler);
+app.get('/health', authenticateToken, (req, res, next) => healthHandler(req, res).catch(next));
+app.post('/collections', authenticateToken, (req, res, next) => collectionsHandler(req, res).catch(next));
+app.post('/ask', authenticateToken, (req, res, next) => askHandler(req, res).catch(next));
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
