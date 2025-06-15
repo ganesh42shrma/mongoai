@@ -5,9 +5,6 @@ import AuthModal from "./components/AuthModal"
 import axios from "axios"
 import supabase from "./utils/supabase"
 
-
-
-
 function App() {
 const [user, setUser] = useState(null)
 const [authLoading, setAuthLoading] = useState(true)
@@ -25,9 +22,6 @@ const [dbConfig, setDbConfig] = useState({
   shouldConnect: false
 })
 
-
-
-
 // Handle authentication
 useEffect(() => {
   // Get initial session
@@ -36,9 +30,6 @@ useEffect(() => {
     setAuthLoading(false)
   })
 
-
-
-
   // Listen for auth changes
   const {
     data: { subscription },
@@ -46,14 +37,8 @@ useEffect(() => {
     setUser(session?.user ?? null)
     setAuthLoading(false)
   })
-
-
-
-
   return () => subscription.unsubscribe()
 }, [])
-
-
 
 
 // Load user config when user is authenticated
@@ -70,9 +55,6 @@ useEffect(() => {
   }
 }, [user])
 
-
-
-
 // Load user's saved database configuration
 const loadUserConfig = async () => {
   try {
@@ -83,15 +65,9 @@ const loadUserConfig = async () => {
       .eq('user_id', user.id)
       .single()
 
-
-
-
     if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
       throw error
     }
-
-
-
 
     if (data) {
       setDbConfig({
@@ -106,9 +82,6 @@ const loadUserConfig = async () => {
     setConfigLoading(false)
   }
 }
-
-
-
 
 // Save user's database configuration
 const saveUserConfig = async (uri, name) => {
@@ -125,9 +98,6 @@ const saveUserConfig = async (uri, name) => {
         { onConflict: ['user_id'] }
       );
 
-
-
-
     if (error) {
       if (error.code === '409') {
         console.warn('Config already exists, updating instead.');
@@ -142,9 +112,6 @@ const saveUserConfig = async (uri, name) => {
   }
 }
 
-
-
-
 // Enhanced dbConfig change handler
 const handleDbConfigChange = (newConfig) => {
   setDbConfig(newConfig)
@@ -154,9 +121,6 @@ const handleDbConfigChange = (newConfig) => {
   }
 }
 
-
-
-
 useEffect(() => {
   // Fetch collections only when shouldConnect is true
   const fetchCollections = async () => {
@@ -164,10 +128,6 @@ useEffect(() => {
       setCollections([])
       return
     }
-
-
-
-
     try {
       // Send JWT token with request for backend validation
       const { data: { session } } = await supabase.auth.getSession()
@@ -184,22 +144,13 @@ useEffect(() => {
     }
   }
 
-
-
-
   fetchCollections()
 }, [dbConfig.shouldConnect, dbConfig.dbUri, dbConfig.dbName])
-
-
 
 
 const handleAsk = async () => {
   if (!query || !selectedCollection) return
   setLoading(true)
-
-
-
-
   try {
     // Send JWT token with request for backend validation
     const { data: { session } } = await supabase.auth.getSession()
@@ -218,9 +169,6 @@ const handleAsk = async () => {
       }
     )
 
-
-
-
     setCleanedQuery(res.data.query)
     setResult(res.data.result)
     setSummary(res.data.summary)
@@ -234,9 +182,6 @@ const handleAsk = async () => {
   }
 }
 
-
-
-
 // Show loading while checking authentication
 if (authLoading) {
   return (
@@ -249,16 +194,10 @@ if (authLoading) {
   )
 }
 
-
-
-
 // Show auth modal if user is not authenticated
 if (!user) {
   return <AuthModal />
 }
-
-
-
 
 // Show loading while fetching user config
 if (configLoading) {
@@ -271,9 +210,6 @@ if (configLoading) {
     </div>
   )
 }
-
-
-
 
 // Show main app if user is authenticated
 return (
