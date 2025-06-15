@@ -2,6 +2,7 @@ const express = require('express');
 const healthHandler = require('./handlers/healthHandler');
 const collectionsHandler = require('./handlers/collectionsHandler');
 const askHandler = require('./handlers/askHandler');
+const authenticateToken = require('../middleware/auth');
 require('dotenv').config();
 
 const app = express();
@@ -23,9 +24,9 @@ app.use((req, res, next) => {
 app.use(express.json());
 
 // Use handlers
-app.get('/health', healthHandler);
-app.post('/collections', collectionsHandler);
-app.post('/ask', askHandler);
+app.get('/health', authenticateToken, healthHandler);
+app.post('/collections', authenticateToken, collectionsHandler);
+app.post('/ask', authenticateToken, askHandler);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
