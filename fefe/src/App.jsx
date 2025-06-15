@@ -123,7 +123,6 @@ function App() {
       try {
         // Send JWT token with request for backend validation
         const { data: { session } } = await supabase.auth.getSession()
-        
         const res = await axios.post("http://localhost:3000/collections", {
           dbUri: dbConfig.dbUri,
           dbName: dbConfig.dbName
