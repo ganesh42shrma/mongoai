@@ -3,98 +3,120 @@ const { runMongoQuery } = require('./db');
 const { askLLM } = require('./llm');
 
 
+
+
 const supabase = createClient(
- process.env.SUPABASE_URL,
- process.env.SUPABASE_SERVICE_ROLE_KEY
+process.env.SUPABASE_URL,
+process.env.SUPABASE_SERVICE_ROLE_KEY
 )
 
 
+
+
 async function detectQueryType(question) {
- const messages = [
-   {
-     role: "system",
-     content: `Analyze if the given question can be converted into a MongoDB query or if it's a general insight request.
+const messages = [
+  {
+    role: "system",
+    content: `Analyze if the given question can be converted into a MongoDB query or if it's a general insight request.
 Respond ONLY with a JSON object in this format:
 {
- "type": "query|insight",
- "reason": "brief explanation"
+"type": "query|insight",
+"reason": "brief explanation"
 }
 Rules:
 1. type should be "query" if the question:
-  - Asks for specific data or conditions
-  - Contains filtering criteria
-  - Requests counting or aggregation
+ - Asks for specific data or conditions
+ - Contains filtering criteria
+ - Requests counting or aggregation
 2. type should be "insight" if the question:
-  - Asks for general information
-  - Requests data exploration
-  - Seeks patterns or overview"`,
-   },
-   { role: "user", content: question },
- ];
+ - Asks for general information
+ - Requests data exploration
+ - Seeks patterns or overview"`,
+  },
+  { role: "user", content: question },
+];
 
 
- const response = await askLLM(messages);
- return safeJsonParseFromLLM(response);
+
+
+const response = await askLLM(messages);
+return safeJsonParseFromLLM(response);
 }
+
+
 
 
 // Add this function to handle insight requests
 async function handleInsightRequest(question, collection, dbUri, dbName) {
- // First, get collection schema and sample
- const schemaQuery = {
-   collection,
-   method: "aggregate",
-   pipeline: [
-     { $sample: { size: 50 } },
-     {
-       $project: {
-         _id: 0,
-         __schema: {
-           $objectToArray: "$$ROOT",
-         },
-       },
-     },
-   ],
- };
+// First, get collection schema and sample
+const schemaQuery = {
+  collection,
+  method: "aggregate",
+  pipeline: [
+    { $sample: { size: 50 } },
+    {
+      $project: {
+        _id: 0,
+        __schema: {
+          $objectToArray: "$$ROOT",
+        },
+      },
+    },
+  ],
+};
 
 
- const sampleData = await runMongoQuery(
-   JSON.stringify(schemaQuery),
-   dbUri,
-   dbName
- );
 
 
- // Generate insights using LLM
- const messages = [
-   {
-     role: "system",
-     content: `You are a data analyst. Given a MongoDB collection sample, provide insights about:
+const sampleData = await runMongoQuery(
+  JSON.stringify(schemaQuery),
+  dbUri,
+  dbName
+);
+
+
+
+
+// Generate insights using LLM
+const messages = [
+  {
+    role: "system",
+    content: `You are a data analyst. Given a MongoDB collection sample, provide insights about:
 1. Data structure (fields and their types)
 2. Value patterns and distributions
 3. Potential relationships and use cases
 Be specific and factual. Base insights only on the provided data.`,
-   },
-   {
-     role: "user",
-     content: `Collection: ${collection}\nQuestion: ${question}\nData Sample:\n${JSON.stringify(
-       sampleData,
-       null,
-       2
-     )}`,
-   },
- ];
+  },
+  {
+    role: "user",
+    content: `Collection: ${collection}\nQuestion: ${question}\nData Sample:\n${JSON.stringify(
+      sampleData,
+      null,
+      2
+    )}`,
+  },
+];
 
 
- const insights = await askLLM(messages);
 
 
- return {
-   type: "insight",
-   data: sampleData,
-   summary: insights,
- };
+const insights = await askLLM(messages);
+
+
+
+
+return {
+  type: "insight",
+  data: sampleData,
+  summary: insights,
+};
 }
+
+
+
+
+
+
 
 
 
@@ -102,69 +124,135 @@ Be specific and factual. Base insights only on the provided data.`,
 
 
 function extractReasoningAndQuery(raw) {
- const reasoningMatch = raw.match(/<think>([\s\S]*?)<\/think>/i);
- let candidate = null;
+const reasoningMatch = raw.match(/<think>([\s\S]*?)<\/think>/i);
+let candidate = null;
 
 
- // Try 1: Parse entire response
- try {
-   const parsed = JSON.parse(raw);
-   if (parsed.collection && parsed.method)
-     return {
-       reasoning: reasoningMatch?.[1]?.trim() || null,
-       query: raw,
-     };
- } catch (_) { }
 
 
- // Try 2: Find last valid JSON substring
- let start = raw.lastIndexOf("{");
- while (start !== -1) {
-   let count = 1;
-   let end = start + 1;
+// Try 1: Parse entire response
+try {
+  const parsed = JSON.parse(raw);
+  if (parsed.collection && parsed.method)
+    return {
+      reasoning: reasoningMatch?.[1]?.trim() || null,
+      query: raw,
+    };
+} catch (_) { }
 
 
-   for (; end < raw.length && count > 0; end++) {
-     if (raw[end] === "{") count++;
-     else if (raw[end] === "}") count--;
-   }
 
 
-   if (count === 0) {
-     try {
-       const jsonStr = raw.substring(start, end);
-       const parsed = JSON.parse(jsonStr);
-       if (parsed.collection && parsed.method) {
-         candidate = jsonStr;
-         break;
-       }
-     } catch (_) { }
-   }
-   start = raw.lastIndexOf("{", start - 1);
- }
+// Try 2: Find last valid JSON substring
+let start = raw.lastIndexOf("{");
+while (start !== -1) {
+  let count = 1;
+  let end = start + 1;
 
 
- return {
-   reasoning: reasoningMatch?.[1]?.trim() || null,
-   query: candidate,
- };
+
+
+  for (; end < raw.length && count > 0; end++) {
+    if (raw[end] === "{") count++;
+    else if (raw[end] === "}") count--;
+  }
+
+
+
+
+  if (count === 0) {
+    try {
+      const jsonStr = raw.substring(start, end);
+      const parsed = JSON.parse(jsonStr);
+      if (parsed.collection && parsed.method) {
+        candidate = jsonStr;
+        break;
+      }
+    } catch (_) { }
+  }
+  start = raw.lastIndexOf("{", start - 1);
 }
 
 
+
+
+return {
+  reasoning: reasoningMatch?.[1]?.trim() || null,
+  query: candidate,
+};
+}
+
+
+
+
 function safeJsonParseFromLLM(raw) {
- const matches = [...raw.matchAll(/{[\s\S]*?}/g)];
- const jsonStr = matches.length ? matches[matches.length - 1][0] : null;
- if (!jsonStr) throw new Error("No valid JSON found in LLM response");
+const matches = [...raw.matchAll(/{[\s\S]*?}/g)];
+const jsonStr = matches.length ? matches[matches.length - 1][0] : null;
+if (!jsonStr) throw new Error("No valid JSON found in LLM response");
 
 
- return JSON.parse(jsonStr);
+
+
+return JSON.parse(jsonStr);
+}
+
+
+
+
+async function askMongoQuery(question, collection) {
+ const messages = [
+   {
+     role: "system",
+     content: `Convert the user query into a MongoDB query. Respond ONLY with valid JSON in this format:
+{
+ "collection": "collection_name",
+ "method": "find|aggregate|etc",
+ "filter": {},
+ "projection": {}
+}
+Rules:
+1. Use EXACT field names from the collection
+2. Only include filter conditions explicitly stated
+3. For date ranges, use ISO strings ("YYYY-MM-DD")
+4. Omit undefined parameters
+5. NEVER include explanations or formatting
+6. Ensure valid JSON syntax`,
+   },
+   { role: "user", content: `Collection: ${collection}\nQuestion: ${question}` },
+ ];
+
+
+ return await askLLM(messages);
+}
+
+
+async function askAnswerSummary(question, data) {
+ if (!data || data.length === 0) {
+   return "No results found for the query";
+ }
+ const messages = [
+   {
+     role: "system",
+     content:
+       "You are a data summarizer. Given a MongoDB result array, generate a short, accurate natural language answer. Do not make assumptions. Base your answer only on the data provided. If the result is empty, say so clearly.",
+   },
+   {
+     role: "user",
+     content: `Question: ${question}\nData:\n${JSON.stringify(data, null, 2)}`,
+   },
+ ];
+
+
+ return await askLLM(messages);
 }
 
 
 module.exports = {
- extractReasoningAndQuery,
- safeJsonParseFromLLM,
- supabase,
- detectQueryType,
- handleInsightRequest,
+extractReasoningAndQuery,
+safeJsonParseFromLLM,
+supabase,
+detectQueryType,
+handleInsightRequest,
+askMongoQuery,
+askAnswerSummary
 };

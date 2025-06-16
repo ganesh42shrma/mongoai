@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import TarkaLogo from "../assets/tarka_logo.png";
 
 export default function Sidebar({
   collections = [],
@@ -36,27 +37,12 @@ export default function Sidebar({
       {/* Header */}
       <div className="p-4 border-b border-[#1a1a1a] flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-7 h-7 bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg flex items-center justify-center">
-            <svg
-              className="w-4 h-4 text-[#888888]"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={1.5}
-                d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"
-              />
-            </svg>
+          <div>
+            <img src={TarkaLogo} alt="Tarka Logo" className="w-12 h-12" />  
           </div>
           {isOpen && (
             <div>
-              <h2 className="text-base font-medium text-white">askQL</h2>
-              <p className="text-xs text-[#888888]">
-                Prompt your way to insights
-              </p>
+              <h2 className="text-base font-medium text-white">Tarka</h2>
             </div>
           )}
         </div>

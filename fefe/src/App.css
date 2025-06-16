@@ -1,1 +1,7 @@
 @import "tailwindcss";
+
+.auth-modal-wrapper {
+    position: fixed;
+    z-index: 2000; /* higher than grid wrapper's 100 */
+  }
+  

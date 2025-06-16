@@ -4,6 +4,7 @@ import MainPanel from "./components/MainPanel";
 import AuthModal from "./components/AuthModal";
 import axios from "axios";
 import supabase from "./utils/supabase";
+import DotGrid from "./components/Backgrounds/DotGrid";
 
 function App() {
   const [user, setUser] = useState(null);
@@ -224,7 +225,38 @@ function App() {
 
   // Show auth modal if user is not authenticated
   if (!user) {
-    return <AuthModal />;
+    return (
+      <div className="grid grid-cols-3 grid-rows-3 fixed inset-0 z-0 bg-black">
+        {[...Array(9)].map((_, i) => (
+          <div key={i} className="relative w-full h-full">
+            <DotGrid
+              dotSize={8}
+              gap={10}
+              baseColor="#555555" // or use a Tailwind color like "#6B7280" for gray-500
+              activeColor="#FFFFFF"
+              proximity={120}
+              shockRadius={250}
+              shockStrength={5}
+              resistance={750}
+              returnDuration={1.5}
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                width: "100%",
+                height: "100%",
+                zIndex: 0,
+              }}
+            />
+          </div>
+        ))}
+
+        {/* Center grid cell: row 2, column 2 (index 4 in a flat array) */}
+        <div className="col-start-2 row-start-2 flex items-center justify-center relative z-100">
+          <AuthModal />
+        </div>
+      </div>
+    );
   }
 
   // Show loading while fetching user config
@@ -251,7 +283,7 @@ function App() {
         user={user}
         isOpen={sidebarOpen}
         onLogout={handleLogout}
-        toggleSidebar={()=> setSidebarOpen(!sidebarOpen)}
+        toggleSidebar={() => setSidebarOpen(!sidebarOpen)}
       />
       <MainPanel
         query={query}
@@ -266,7 +298,7 @@ function App() {
         user={user}
         onLogout={handleLogout}
         isOpen={sidebarOpen}
-        toggleSidebar={()=> setSidebarOpen(!sidebarOpen)}
+        toggleSidebar={() => setSidebarOpen(!sidebarOpen)}
       />
     </div>
   );

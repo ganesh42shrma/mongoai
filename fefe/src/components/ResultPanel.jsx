@@ -1,28 +1,28 @@
-import { useState } from "react"
+import { useState } from "react";
 
 export default function ResultPanel({ cleanedQuery, summary, result }) {
   const [expandedSections, setExpandedSections] = useState({
     query: true,
     summary: true,
     result: false,
-  })
+  });
 
   const toggleSection = (section) => {
     setExpandedSections((prev) => ({
       ...prev,
       [section]: !prev[section],
-    }))
-  }
+    }));
+  };
 
-  if (!cleanedQuery && !summary && !result) return null
+  if (!cleanedQuery && !summary && !result) return null;
 
   const formatResult = (data) => {
     try {
-      return JSON.stringify(data, null, 2)
+      return JSON.stringify(data, null, 2);
     } catch {
-      return String(data)
+      return String(data);
     }
-  }
+  };
 
   return (
     <div className="space-y-4">
@@ -35,21 +35,34 @@ export default function ResultPanel({ cleanedQuery, summary, result }) {
           >
             <div className="flex items-center gap-3">
               <div className="w-2 h-2 bg-[#10b981] rounded-full"></div>
-              <h3 className="text-[#10b981] font-medium text-sm">Processed Query</h3>
+              <h3 className="text-[#10b981] font-medium text-sm">
+                Processed Query
+              </h3>
             </div>
             <svg
-              className={`w-4 h-4 text-[#888888] transition-transform ${expandedSections.query ? "rotate-180" : ""}`}
+              className={`w-4 h-4 text-[#888888] transition-transform ${
+                expandedSections.query ? "rotate-180" : ""
+              }`}
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
             >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 9l-7 7-7-7" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={1.5}
+                d="M19 9l-7 7-7-7"
+              />
             </svg>
           </button>
           {expandedSections.query && (
             <div className="px-4 pb-4">
               <div className="bg-[#0a0a0a] rounded-lg p-3 border border-[#2a2a2a]">
-                <code className="text-sm text-[#cccccc] font-mono whitespace-pre-wrap">{cleanedQuery}</code>
+                <code className="text-sm text-[#cccccc] font-mono whitespace-pre-wrap">
+                  {typeof cleanedQuery === "object"
+                    ? JSON.stringify(cleanedQuery, null, 2)
+                    : cleanedQuery}
+                </code>
               </div>
             </div>
           )}
@@ -68,18 +81,27 @@ export default function ResultPanel({ cleanedQuery, summary, result }) {
               <h3 className="text-[#f59e0b] font-medium text-sm">AI Summary</h3>
             </div>
             <svg
-              className={`w-4 h-4 text-[#888888] transition-transform ${expandedSections.summary ? "rotate-180" : ""}`}
+              className={`w-4 h-4 text-[#888888] transition-transform ${
+                expandedSections.summary ? "rotate-180" : ""
+              }`}
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
             >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 9l-7 7-7-7" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={1.5}
+                d="M19 9l-7 7-7-7"
+              />
             </svg>
           </button>
           {expandedSections.summary && (
             <div className="px-4 pb-4">
               <div className="prose prose-invert max-w-none">
-                <p className="text-[#cccccc] leading-relaxed text-sm">{summary}</p>
+                <p className="text-[#cccccc] leading-relaxed text-sm">
+                  {summary}
+                </p>
               </div>
             </div>
           )}
@@ -101,25 +123,41 @@ export default function ResultPanel({ cleanedQuery, summary, result }) {
               </span>
             </div>
             <svg
-              className={`w-4 h-4 text-[#888888] transition-transform ${expandedSections.result ? "rotate-180" : ""}`}
+              className={`w-4 h-4 text-[#888888] transition-transform ${
+                expandedSections.result ? "rotate-180" : ""
+              }`}
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
             >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 9l-7 7-7-7" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={1.5}
+                d="M19 9l-7 7-7-7"
+              />
             </svg>
           </button>
           {expandedSections.result && (
             <div className="px-4 pb-4">
               <div className="bg-[#0a0a0a] rounded-lg border border-[#2a2a2a] max-h-96 overflow-y-auto">
-                <pre className="p-3 text-sm text-[#cccccc] font-mono whitespace-pre-wrap">{formatResult(result)}</pre>
+                <pre className="p-3 text-sm text-[#cccccc] font-mono whitespace-pre-wrap">
+                  {formatResult(result)}
+                </pre>
               </div>
               <div className="flex justify-end mt-2">
                 <button
-                  onClick={() => navigator.clipboard.writeText(formatResult(result))}
+                  onClick={() =>
+                    navigator.clipboard.writeText(formatResult(result))
+                  }
                   className="text-xs text-[#888888] hover:text-white transition-colors flex items-center gap-1"
                 >
-                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg
+                    className="w-3 h-3"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -135,5 +173,5 @@ export default function ResultPanel({ cleanedQuery, summary, result }) {
         </div>
       )}
     </div>
-  )
+  );
 }
