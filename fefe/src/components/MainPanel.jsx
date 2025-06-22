@@ -1,7 +1,7 @@
 import ProfileMenu from "./ProfileMenu";
 import UserMessage from "./UserMessage";
 import AssistantMessage from "./AssistantMessage";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import ChatInputBar from "./ChatInputBar";
 
 
@@ -24,9 +24,32 @@ export default function MainPanel({
  promptSuggestions,
  suggestionsLoading,
 }) {
+ const [showSuggestions, setShowSuggestions] = useState(false);
+ const prevCollectionRef = useRef();
+ const messagesEndRef = useRef(null);
  const hasConversation = conversation.length > 0;
  const isConnected = dbConfig.shouldConnect && dbConfig.dbUri && dbConfig.dbName;
- const messagesEndRef = useRef(null);
+
+
+ // Show suggestions when collection changes
+ useEffect(() => {
+   if (selectedCollection && prevCollectionRef.current !== selectedCollection) {
+     setShowSuggestions(true);
+     prevCollectionRef.current = selectedCollection;
+   }
+ }, [selectedCollection]);
+
+
+ // Hide suggestions if user starts typing
+ useEffect(() => {
+   if (query) setShowSuggestions(false);
+ }, [query]);
+
+
+ const handleSuggestionClick = (suggestion) => {
+   setQuery(suggestion);
+   setShowSuggestions(false);
+ };
 
 
  const scrollToBottom = () => {
@@ -199,7 +222,7 @@ export default function MainPanel({
                    Try asking questions like:
                  </h3>
                  <div className="grid gap-3">
-                   {!suggestionsLoading && promptSuggestions.length > 0 ? (
+                   {promptSuggestions.length > 0 ? (
                      promptSuggestions.map((example, i) => (
                        <button
                          key={i}
@@ -242,6 +265,22 @@ export default function MainPanel({
          )}
        </div>
      </div>
+
+
+     {/* Floating Suggestions (only when showSuggestions is true, and not loading, and there are suggestions) */}
+     {showSuggestions && !suggestionsLoading && promptSuggestions.length > 0 && !query && (
+       <div className="fixed left-1/2 bottom-28 z-30 -translate-x-1/2 flex flex-wrap gap-2 max-w-2xl w-full justify-center pointer-events-none">
+         {promptSuggestions.map((example, i) => (
+           <button
+             key={i}
+             onClick={() => handleSuggestionClick(example)}
+             className="pointer-events-auto px-4 py-2 bg-[#232323] hover:bg-[#0ea5e9] text-[#cccccc] hover:text-white border border-[#2a2a2a] rounded-lg shadow transition-colors text-sm"
+           >
+             {example}
+           </button>
+         ))}
+       </div>
+     )}
 
 
      {/* Input */}

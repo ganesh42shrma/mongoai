@@ -1,8 +1,6 @@
-const { getDb } = require('../../lib/db');
 const { askLLM } = require('../../lib/llm');
 const { supabase } = require('../../lib/utils');
-const { getCache } = require('../../lib/cache');
-const logger = require('../../lib/logger');
+const cache = require('../../lib/cache');
 
 
 module.exports = async (req, res) => {
@@ -49,7 +47,7 @@ module.exports = async (req, res) => {
 
    // Get cached schema
    const cacheKey = `${userId}-${dbName}`;
-   const cachedData = getCache(cacheKey);
+   const cachedData = cache.get(cacheKey);
   
    if (!cachedData || !cachedData.schema) {
      return res.status(404).json({ error: 'Schema not found. Please refresh the collections first.' });
@@ -101,10 +99,16 @@ Generate 4-6 question suggestions:`
    let parsedSuggestions;
    try {
      parsedSuggestions = JSON.parse(suggestions);
+     // If the LLM returns a stringified array as a string, parse again
+     if (typeof parsedSuggestions === 'string') {
+       parsedSuggestions = JSON.parse(parsedSuggestions);
+     }
    } catch (error) {
      // If parsing fails, try to extract suggestions from the response
      console.warn('Failed to parse LLM response as JSON, attempting to extract suggestions');
-     const lines = suggestions.split('\n').filter(line => line.trim());
+     const lines = suggestions.split('\n').map(line => line.trim()).filter(line =>
+       line && !line.startsWith('[') && !line.startsWith(']') && !line.startsWith('"') && !line.endsWith('",')
+     );
      parsedSuggestions = lines.slice(0, 6); // Take first 6 lines as suggestions
    }
 

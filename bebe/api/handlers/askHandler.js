@@ -1,7 +1,7 @@
 const { detectQueryType, handleInsightRequest, askMongoQuery, askAnswerSummary, extractReasoningAndQuery, findObjectIds } = require('../../lib/utils');
-const { runMongoQuery, findDocumentsByIds, getDb } = require('../../lib/db');
+const { runMongoQuery, findDocumentsByIds } = require('../../lib/db');
 const logger = require('../../lib/logger');
-const { supabase, getSupabase } = require('../../lib/utils');
+const { supabase } = require('../../lib/utils');
 const cache = require('../../lib/cache');
 const { getCollectionSchema, getEmbeddings, getVectorSearchResult, askLLM } = require('../../lib/llm');
 
@@ -18,12 +18,11 @@ module.exports = async (req, res) => {
 
 
    const userId = req.user.id;
-   const supabase = getSupabase();
 
 
    // Fetch DB config from Supabase
    const { data: dbData, error: dbError } = await supabase
-     .from('user_db_configs')
+     .from('user_configs')
      .select('db_uri, db_name')
      .eq('user_id', userId)
      .single();
@@ -67,11 +66,6 @@ module.exports = async (req, res) => {
    console.log(`Using LLM provider: ${llmProvider}`);
 
 
-   // Get DB instance
-   const db = await getDb(dbUri, dbName);
-   const collection = db.collection(collectionName);
-
-
    const cacheKey = `${userId}-${dbName}`;
    const cachedData = cache.get(cacheKey);
    const dbSchema = cachedData ? cachedData.schema : null;
@@ -85,14 +79,14 @@ module.exports = async (req, res) => {
 
    if (queryType.type === 'insight') {
      logger.info('Generating insights...');
-     const result = await handleInsightRequest(question, collection, dbUri, dbName, llmProvider, llmApiKey);
+     const result = await handleInsightRequest(question, collectionName, dbUri, dbName, llmProvider, llmApiKey);
      return res.json(result);
    }
 
 
    // Handle regular query
    logger.info('Generating MongoDB query...');
-   const rawQuery = await askMongoQuery(question, collection, dbSchema, llmProvider, llmApiKey);
+   const rawQuery = await askMongoQuery(question, collectionName, dbSchema, llmProvider, llmApiKey);
    const { reasoning, query } = extractReasoningAndQuery(rawQuery);
     if (!query) {
      return res.status(422).json({ error: 'Failed to generate valid MongoDB query' });

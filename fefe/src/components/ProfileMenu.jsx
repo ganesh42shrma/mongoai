@@ -6,13 +6,11 @@ export default function ProfileMenu({ userData, onLogout }) {
  const [open, setOpen] = useState(false)
  const menuRef = useRef(null)
 
-
  const toggleMenu = () => setOpen(prev => !prev)
 
 
  const getAvatarUrl = () => {
-   return userData?.user_metadata?.avatar_url ||
-     `https://ui-avatars.com/api/?name=${userData?.user_metadata?.full_name || "U"}&background=0a0a0a&color=fff`
+   return userData?.user_metadata?.avatar_url 
  }
 
 
